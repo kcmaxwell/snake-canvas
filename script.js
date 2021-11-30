@@ -1,13 +1,22 @@
 var canvas = document.getElementById("myCanvas");
 var ctx = canvas.getContext("2d");
 
-// sizes for the various objects in the game
+// sizes for various objects in the game
 var tileLength = 16;
 var fruitRadius = 10; // should be less than tileLength
+var canvasLength = 50; // is in tiles
 
 // the fruit's x and y position in the tile system
 var fruitX = 5;
 var fruitY = 3;
+
+function spawnFruit() {
+	// get the set of all empty tiles
+
+	// spawn the fruit on a randomly selected tile in the set
+	fruitX = Math.floor(Math.random() * canvasLength);
+	fruitY = Math.floor(Math.random() * canvasLength);
+}
 
 function draw() {
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -28,9 +37,12 @@ function drawSnake() {
 }
 
 function resizeCanvas() {
-	canvas.width = tileLength * 50;
-	canvas.height = tileLength * 50;
+	canvas.width = tileLength * canvasLength;
+	canvas.height = tileLength * canvasLength;
 }
 
 resizeCanvas();
+
+spawnFruit();
+
 setInterval(draw, 16.6667);
