@@ -16,6 +16,8 @@ var snakeDirection = "Right";
 var snakeLength = 4;
 var snakeGrowing = false;
 
+var snakeChangingDirection = false;
+
 var tiles;
 
 document.addEventListener("keydown", keyDownHandler, false);
@@ -79,18 +81,20 @@ function drawSnake() {
 function updateSnake() {
 	switch (snakeDirection) {
 		case "Up":
-			snake.unshift([snake[0][0], snake[0][1] - 1);
+			snake.unshift([snake[0][0], snake[0][1] - 1]);
 			break;
 		case "Down":
-			snake.unshift([snake[0][0], snake[0][1] + 1);
+			snake.unshift([snake[0][0], snake[0][1] + 1]);
 			break;
 		case "Left":
-			snake.unshift([snake[0][0] - 1, snake[0][1]);
+			snake.unshift([snake[0][0] - 1, snake[0][1]]);
 			break;
 		case "Right":
-			snake.unshift([snake[0][0] + 1, snake[0][1]);
+			snake.unshift([snake[0][0] + 1, snake[0][1]]);
 			break;
 	}
+
+	snakeChangingDirection = false;
 
 	if (!snakeGrowing)
 		snake.pop();
@@ -106,14 +110,23 @@ resizeCanvas();
 spawnFruit();
 
 function keyDownHandler(e) {
-	if (e.key == "Up" || e.key == "ArrowUp") {
+	// if the snake has changed direction, do not let the player input until the snake has moved at least 1 space
+	if (snakeChangingDirection)
+		return;
+
+	// make sure the snake does not turn backwards, only left or right
+	if ((e.key == "Up" || e.key == "ArrowUp") && snakeDirection != "Down" && snakeDirection != "Up") {
 		snakeDirection = "Up";
-	} else if (e.key == "Down" || e.key == "ArrowDown") {
+		snakeChangingDirection = true;
+	} else if ((e.key == "Down" || e.key == "ArrowDown") && snakeDirection != "Up" && snakeDirection != "Down") {
 		snakeDirection = "Down";
-	} else if (e.key == "Left" || e.key == "ArrowLeft") {
+		snakeChangingDirection = true;
+	} else if ((e.key == "Left" || e.key == "ArrowLeft") && snakeDirection != "Right" && snakeDirection != "Left") {
 		snakeDirection = "Left";
-	} else if (e.key == "Right" || e.key == "ArrowRight") {
+		snakeChangingDirection = true;
+	} else if ((e.key == "Right" || e.key == "ArrowRight") && snakeDirection != "Left" && snakeDirection != "Right") {
 		snakeDirection = "Right";
+		snakeChangingDirection = true;
 	}
 }
 
