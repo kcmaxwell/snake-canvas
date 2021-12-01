@@ -10,12 +10,37 @@ var canvasLength = 50; // is in tiles
 var fruitX = 5;
 var fruitY = 3;
 
-var snakeHeadX = 10;
-var snakeHeadY = 10;
+// store the snake as an array of positions, the direction it is moving, its length, and if it is growing
+var snake = new Array();
 var snakeDirection = "Right";
+var snakeLength = 4;
 var snakeGrowing = false;
 
+var tiles;
+
 document.addEventListener("keydown", keyDownHandler, false);
+
+function initializeGame() {
+	// create the 2d array of the game space
+	tiles = new Array(canvasLength);
+	for (let i = 0; i < canvasLength; i++) {
+		tiles[i] = new Array(canvasLength);
+	}
+
+	// set default values for the snake
+	snakeDirection = "Right";
+	snakeLength = 4;
+	snakeGrowing = false;
+
+	snake = new Array(4);
+	snake[0] = [10, 10];
+	snake[1] = [9, 10];
+	snake[2] = [8, 10];
+	snake[3] = [7, 10];
+
+	setInterval(draw, 10);
+	setInterval(updateSnake, 50);
+}
 
 function spawnFruit() {
 	// get the set of all empty tiles
@@ -29,8 +54,6 @@ function draw() {
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
 	drawFruit();
 	drawSnake();
-
-	updateSnake();
 }
 
 function drawFruit() {
@@ -43,7 +66,11 @@ function drawFruit() {
 
 function drawSnake() {
 	ctx.beginPath();
-	ctx.rect(snakeHeadX * tileLength, snakeHeadY * tileLength, tileLength, tileLength);
+
+	for (let i = 0; i < snake.length; i++) {
+		ctx.rect(snake[i][0] * tileLength, snake[i][1] * tileLength, tileLength, tileLength);
+	}
+
 	ctx.fillStyle = "white";
 	ctx.fill();
 	ctx.closePath();
@@ -52,24 +79,21 @@ function drawSnake() {
 function updateSnake() {
 	switch (snakeDirection) {
 		case "Up":
-			snakeHeadY--;
+			snake.unshift([snake[0][0], snake[0][1] - 1);
 			break;
 		case "Down":
-			snakeHeadY++;
+			snake.unshift([snake[0][0], snake[0][1] + 1);
 			break;
 		case "Left":
-			snakeHeadX--;
+			snake.unshift([snake[0][0] - 1, snake[0][1]);
 			break;
 		case "Right":
-			snakeHeadX++;
+			snake.unshift([snake[0][0] + 1, snake[0][1]);
 			break;
 	}
 
-	// if the snake did not just eat a fruit, remove the oldest tile from the snake, the tail
-	if (!snakeGrowing) {
-
-	}
-	
+	if (!snakeGrowing)
+		snake.pop();
 }
 
 function resizeCanvas() {
@@ -93,4 +117,4 @@ function keyDownHandler(e) {
 	}
 }
 
-setInterval(draw, 16.6667);
+initializeGame();
