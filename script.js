@@ -10,6 +10,13 @@ var canvasLength = 50; // is in tiles
 var fruitX = 5;
 var fruitY = 3;
 
+var snakeHeadX = 10;
+var snakeHeadY = 10;
+var snakeDirection = "Right";
+var snakeGrowing = false;
+
+document.addEventListener("keydown", keyDownHandler, false);
+
 function spawnFruit() {
 	// get the set of all empty tiles
 
@@ -22,6 +29,8 @@ function draw() {
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
 	drawFruit();
 	drawSnake();
+
+	updateSnake();
 }
 
 function drawFruit() {
@@ -33,6 +42,33 @@ function drawFruit() {
 }
 
 function drawSnake() {
+	ctx.beginPath();
+	ctx.rect(snakeHeadX * tileLength, snakeHeadY * tileLength, tileLength, tileLength);
+	ctx.fillStyle = "white";
+	ctx.fill();
+	ctx.closePath();
+}
+
+function updateSnake() {
+	switch (snakeDirection) {
+		case "Up":
+			snakeHeadY--;
+			break;
+		case "Down":
+			snakeHeadY++;
+			break;
+		case "Left":
+			snakeHeadX--;
+			break;
+		case "Right":
+			snakeHeadX++;
+			break;
+	}
+
+	// if the snake did not just eat a fruit, remove the oldest tile from the snake, the tail
+	if (!snakeGrowing) {
+
+	}
 	
 }
 
@@ -44,5 +80,17 @@ function resizeCanvas() {
 resizeCanvas();
 
 spawnFruit();
+
+function keyDownHandler(e) {
+	if (e.key == "Up" || e.key == "ArrowUp") {
+		snakeDirection = "Up";
+	} else if (e.key == "Down" || e.key == "ArrowDown") {
+		snakeDirection = "Down";
+	} else if (e.key == "Left" || e.key == "ArrowLeft") {
+		snakeDirection = "Left";
+	} else if (e.key == "Right" || e.key == "ArrowRight") {
+		snakeDirection = "Right";
+	}
+}
 
 setInterval(draw, 16.6667);
