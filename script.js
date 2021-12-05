@@ -2,9 +2,10 @@ var canvas = document.getElementById("myCanvas");
 var ctx = canvas.getContext("2d");
 
 // sizes for various objects in the game
-var tileLength = 16;
+var tileLength = 40;
 var fruitRadius = 10; // should be less than tileLength
-var canvasLength = 50; // is in tiles
+var canvasLength = 30; // is in tiles
+var snakeSpacing = 10; // space left undrawn on a tile to the side of the snake
 
 // the fruit's x and y position in the tile system
 var fruitX = 5;
@@ -13,8 +14,10 @@ var fruitY = 3;
 // store the snake as an array of positions, the direction it is moving, its length, and if it is growing
 var snake = new Array();
 var snakeDirection = "Right";
+var headDirection = snakeDirection;
+var tailDirection = snakeDirection;
 var snakeLength = 4;
-var snakeGrowing = false;
+var snakeGrowing = 0;
 
 var snakeChangingDirection = false;
 
@@ -40,8 +43,10 @@ function initializeGame() {
 	snake[2] = [8, 10];
 	snake[3] = [7, 10];
 
+	updateSnake();
+
 	setInterval(draw, 10);
-	setInterval(updateSnake, 50);
+	setInterval(updateSnake, 1000);
 }
 
 function spawnFruit() {
@@ -69,13 +74,58 @@ function drawFruit() {
 function drawSnake() {
 	ctx.beginPath();
 
+	let lastDirection;
 	for (let i = 0; i < snake.length; i++) {
-		ctx.rect(snake[i][0] * tileLength, snake[i][1] * tileLength, tileLength, tileLength);
+		// if it is the head or tail, use the head or tail direction
+		let direction;
+		if (i == 0) {
+			direction = headDirection;
+		} else if (i == snake.length - 1) {
+			direction = tailDirection;
+		} else {
+			direction = getDirection(snake[i], snake[i+1]);
+		}
+
+		// if direction is the same, draw 1 rect, if not, draw 2 rects
+		if (direction == lastDirection) {
+			if (direction == "Up" || direction == "Down") {
+				ctx.rect((snake[i][0] * tileLength) + snakeSpacing, (snake[i][1] * tileLength), tileLength - (snakeSpacing * 2), tileLength);
+			} else {
+				ctx.rect((snake[i][0] * tileLength), (snake[i][1] * tileLength) + snakeSpacing, tileLength, tileLength - (snakeSpacing * 2));
+			}
+		} else {
+			if (direction == "Up" || lastDirection == "Down") {
+				ctx.rect((snake[i][0] * tileLength) + snakeSpacing, (snake[i][1] * tileLength), tileLength - (snakeSpacing * 2), tileLength - snakeSpacing);
+			}
+			if (direction == "Down" || lastDirection == "Up") {
+				ctx.rect((snake[i][0] * tileLength) + snakeSpacing, (snake[i][1] * tileLength) + snakeSpacing, tileLength - (snakeSpacing * 2), tileLength - snakeSpacing);
+			}
+			if (direction == "Left" || lastDirection == "Right") {
+				ctx.rect((snake[i][0] * tileLength), (snake[i][1] * tileLength) + snakeSpacing, tileLength - snakeSpacing, tileLength - (snakeSpacing * 2));
+			}
+			if (direction == "Right" || lastDirection == "Left") {
+				ctx.rect((snake[i][0] * tileLength) + snakeSpacing, (snake[i][1] * tileLength) + snakeSpacing, tileLength - snakeSpacing, tileLength - (snakeSpacing * 2));
+			}
+		}
+
+		lastDirection = direction;
 	}
 
 	ctx.fillStyle = "white";
 	ctx.fill();
 	ctx.closePath();
+}
+
+function getDirection(curr, next) {
+	if (curr[1] > next[1]) {
+		return "Up";
+	} else if (curr[1] < next[1]) {
+		return "Down";
+	} else if (curr[0] > next[0]) {
+		return "Left";
+	} else {
+		return "Right";
+	}
 }
 
 function updateSnake() {
@@ -96,18 +146,29 @@ function updateSnake() {
 
 	snakeChangingDirection = false;
 
-	if (!snakeGrowing)
+	// update the tail direction
+	tailDirection = getDirection(snake[snake.length - 2], snake[snake.length - 1]);
+
+	// update head direction
+	headDirection = getDirection(snake[0], snake[1]);
+
+	if (snakeGrowing == 0) {
 		snake.pop();
+	}
+	else
+		snakeGrowing--;
+
+	// if the snake head is on the same tile as the fruit, eat it, spawn a new one, and make the snake grow
+	if (snake[0][0] == fruitX && snake[0][1] == fruitY) {
+		snakeGrowing = 2;
+		spawnFruit();
+	}
 }
 
 function resizeCanvas() {
 	canvas.width = tileLength * canvasLength;
 	canvas.height = tileLength * canvasLength;
 }
-
-resizeCanvas();
-
-spawnFruit();
 
 function keyDownHandler(e) {
 	// if the snake has changed direction, do not let the player input until the snake has moved at least 1 space
@@ -130,4 +191,6 @@ function keyDownHandler(e) {
 	}
 }
 
+resizeCanvas();
+spawnFruit();
 initializeGame();
